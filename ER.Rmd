@@ -1,0 +1,323 @@
+---
+title: "Project Report"
+author: "Yichu Yan"
+date: "11/20/2019"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Factors affecting Euro exchange rates in different EU countries
+## Background
+Euro can be used in 19 EU countries: Austria, Belgium, Cyprus, Estonia, Finland, France, Germany, Greece, Ireland, Italy, Latvia, Lithuania, Luxembourg, Malta, the Netherlands, Portugal, Slovakia, Slovenia and Spain. But exchange rates of Euro to Dollar varies in these countries and are affected by Forex trades. In this way, I set project topic as investigating factors affecting Euro exchange rates in EU countries.
+
+&nbsp;
+&nbsp;
+
+## Data collection
+I collected 2000-2018 exchange rates, GDP, interest rates, and trade of goods data sheets of 10 EU countries (Austria, Belgium, Finland, France, Germany, Greece, Ireland, Italy, Netherlands, Spain) on the International Monetary Fund website and organized data in Excel to make it readable. In order to arrange data easily, I renamed variables with abbreviations while reading into RStudio.
+
+
+
+&nbsp;
+&nbsp;
+
+
+Time: "Time"   
+Country: "Country"       
+RealER: "Real Effective Exchange Rate, based on Consumer Price Index"  
+GDP: "Gross Domestic Product, Nominal, Domestic Currency"  
+HCE: "Household Consumption Expenditure, incl. NPISHs, Nominal, Domestic Currency"  
+GCE: "Government Consumption Expenditure, Nominal, Domestic Currency"  
+GFCF: "Gross Fixed Capital Formation, Nominal, Domestic Currency"  
+CinI: "Change in Inventories, Nominal, Domestic Currency"   
+EGS: "Exports of Goods and Services, Nominal, Domestic Currency"  
+IGS: "Imports of Goods and Services, Nominal, Domestic Currency"  
+GDPV: "Gross Domestic Product, Volume"  
+GDPD: "Gross Domestic Product, Deflator"  
+GDPN: "Gross Domestic Product, Nominal, Seasonally Adjusted, Domestic Currency"  
+HCE2: "Household Consumption Expenditure, incl. NPISHs, Nominal, Seasonally Adjusted, Domestic Currency"  
+GFCE: "Govenment Final Consumption Expenditure, Nominal, Seasonally adjusted, Domestic Currency"  
+GFCF2: "Gross Fixed Capital Formation, Nominal, Seasonally Adjusted, Domestic Currency"  
+CinI2: "Change in Inventories, Nominal, Seasonally Adjusted, Domestic Currency"  
+EGS2: "Exports of Goods and Services, Nominal, Seasonally Adjusted, Domestic Currency"  
+IGS2: "Imports of Goods and Services, Nominal, Seasonally Adjusted, Domestic Currency"  
+GDPV2: "Gross Domestic Product, Volume, Seasonally Adjusted"  
+GDPD2: "Gross Domestic Product, Deflator, Seasonally Adjusted"  
+GvmBonds: "Government Bonds"  
+HEAR: "Harmonized Euro Area Rates, Outstanding Amounts, Deposits, Households, Agreed Maturity, Up to 2 Years"                  
+HEAR2: "Harmonized Euro Area Rates, Outstanding Amounts, Deposits, Non-Financial Corporations, Agreed Maturity, Up to 2 Years"  
+HEAR3: "Harmonized Euro Area Rates, Loans, Households, Consumer Credit and Other, Up to 1 Year"  
+HEAR4: "Harmonized Euro Area Rates, New Business, Loans, Households, Consumption, Floating Rate and up to 1 Year"               
+HEAR5: "Harmonized Euro Area Rates, Loans, Households, House Purchase, Over 5 Years"  
+GDPV8: "Harmonized Euro Area Rates, Loans, Non-Financial Corporations, Up to 1 Year"  
+ExportUS: "Goods, Value of Exports, US Dollars"   
+ExportNC: "Goods, Value of Exports, National Currency"  
+ImportUS: "Goods, Value of Imports, CIF,  US Dollars"   
+ImportNC: "Goods, Value of Imports, CIF, National Currency"  
+
+
+```{r, include=FALSE}
+library(readxl)
+library(dplyr)
+mydata <- read_excel('Data.xlsx')
+names(mydata)[1] <- "Time"
+names(mydata)[2] <- "Country"
+names(mydata)[3] <- "RealER"
+names(mydata)[4] <- "GDP"
+names(mydata)[5] <- "HCE"
+names(mydata)[6] <- "GCE"
+names(mydata)[7] <- "GFCF"
+names(mydata)[8] <- "CinI"
+names(mydata)[9] <- "EGS"
+names(mydata)[10] <- "IGS"
+names(mydata)[11] <- "GDPV"
+names(mydata)[12] <- "GDPD"
+names(mydata)[13] <- "GDPN"
+names(mydata)[14] <- "HCE2"
+names(mydata)[15] <- "GFCE"
+names(mydata)[16] <- "GFCF2"
+names(mydata)[17] <- "CinI2"
+names(mydata)[18] <- "EGS2"
+names(mydata)[19] <- "IGS2"
+names(mydata)[20] <- "GDPV2"
+names(mydata)[21] <- "GDPD2"
+names(mydata)[22] <- "GvmBonds"
+names(mydata)[23] <- "HEAR"
+names(mydata)[24] <- "HEAR2"
+names(mydata)[25] <- "HEAR3"
+names(mydata)[26] <- "HEAR4"
+names(mydata)[27] <- "HEAR5"
+names(mydata)[28] <- "GDPV8"
+names(mydata)[29] <- "ExportUS"
+names(mydata)[30] <- "ExportNC"
+names(mydata)[31] <- "ImportUS"
+names(mydata)[32] <- "ImportNC"
+```
+
+
+\newpage
+
+
+## Data cleaning
+I summarized numbers of missing values in each variable and decided to remove such NAs from dataset.
+
+```{r, echo=FALSE, message=FALSE, warning=FALSE}
+library(funModeling)
+library(tidyverse)
+data_integrity(mydata)
+mydata <- drop_na(mydata)
+```
+
+
+\newpage
+
+
+# EDA
+## Data plots
+
+```{r, echo=FALSE, message=FALSE, warning=FALSE}
+library(ggplot2)
+library(stringi)
+SData <- mydata %>% dplyr::select(Country, RealER) %>% mutate(Year=stri_extract_last_regex(mydata$Time, "\\d{4}"))%>% group_by(Country) 
+ggplot(SData, aes(x = Country, fill = Year)) +
+  geom_bar() +
+  ggtitle("Observations Distribution") +
+  scale_fill_viridis_d()
+```
+
+```{r, echo=FALSE, message=FALSE, warning=FALSE}
+PData <- mydata %>% mutate(Year=stri_extract_last_regex(mydata$Time, "\\d{4}"))
+ggplot(data = PData, aes(x = Country, y = RealER, color = Year)) +
+    geom_point(size = 3) +
+    geom_line() + 
+  ggtitle("Real Effective Exchange Rate")
+```
+
+&nbsp;
+&nbsp;
+
+Time frame of cleaned data ranges from 2003 to 2018, although some factors related to exchange rates, GDP, interest rates, and trade of goods contains missing values in original data, after cleaning data, 10 countries still have plenty observations to fit models. 
+
+
+\newpage
+
+
+# Concerns
+## Check stationary or non-stationary
+
+```{r, echo=FALSE, message=FALSE, warning=FALSE}
+data1 <- mydata %>% filter(Country=="Austria")
+acf(data1$RealER)
+```
+
+&nbsp;
+
+```{r, echo=FALSE, message=FALSE, warning=FALSE}
+acf(data1$HEAR2)
+```
+
+&nbsp;
+&nbsp;
+
+Non-stationary variables would give models large R square and makes estimates unreliable. Original data is time series data, even though I mixed 10 countries' data and deleted observations containing missing values, I still need to check ACF before and avoid using non-stationary variables to fit regressions, here are 2 examples.  
+
+&nbsp;
+&nbsp;
+
+## Correlation
+
+```{r, echo=TRUE, message=FALSE, warning=FALSE}
+sapply(mydata, is.numeric)
+cordata <- mydata[, sapply(mydata, is.numeric)]
+cor.ma <- cor(cordata, method = "pearson")
+corrplot::corrplot(cor.ma, method = "circle", type = "upper", diag = F) 
+```
+
+Some variables like ExportUS and ExportNC have high correlations beacuse they are both used to describe values of export. In this way, we need to consider only use part of them in models.
+
+
+\newpage
+
+
+# Methods
+
+## Parallel Analysis
+Dataset has 32 variables and I want to find out the number of factors that will be selected for later analysis.
+
+```{r, echo=TRUE, message=FALSE, warning=FALSE}
+library(psych) 
+library(GPArotation)
+parallel <- fa.parallel(cordata, fm = 'minres', fa = 'fa') # parallel analysis
+```
+
+&nbsp;
+&nbsp;
+
+The blue line shows eigenvalues of actual data and the two red lines (placed on top of each other) show simulated and resampled data. Here we look at the large drops in the actual data and spot the point where it levels off to the right. Also we locate the point of inflection – the point where the gap between simulated data and actual data tends to be minimum.
+
+
+```{r, echo=TRUE, message=FALSE, warning=FALSE}
+sixfactor <- fa(cordata,nfactors = 6,rotate = "oblimin",fm="minres") # 6 factor analysis
+fa.diagram(sixfactor)
+```
+
+
+\newpage
+
+
+## Random Forest
+
+```{r, echo=TRUE, message=FALSE, warning=FALSE}
+library(randomForest)
+model1 <- randomForest(RealER~., data=cordata, importance=T, ntree=500)
+model2 <- randomForest(RealER~., data=cordata, importance=T, ntree=1000)
+varImpPlot(model1)
+varImpPlot(model2)
+```
+
+&nbsp;
+&nbsp;
+
+Try to fit models using top factors
+
+
+\newpage
+
+
+# Models
+```{r, echo=FALSE}
+mydata <- mydata %>% mutate(Year=stri_extract_last_regex(mydata$Time, "\\d{4}"))
+```
+
+```{r, echo=TRUE, message=FALSE, warning=FALSE}
+library(plotly)
+fit1 <- lm(RealER~GvmBonds+HEAR2+GDPD+log(ExportNC)+log(ImportNC)+as.factor(Country), data=mydata)
+summary(fit1)
+AIC(fit1)
+plot(fit1,which=1)
+car::qqPlot(fit1$residuals)
+```
+
+
+According to the residual plot, our model complies with the assumptions of normality and constant variance, so there is no issue about violating the model assumptions. 
+
+## Interpretation
+
+The intercept is the predicted RealER in Austria if GvmBonds, HEAR2, GDPD, log(ExportNC) and log(ImportNC) are all equal to zero. Because these factors are never close to zero, the intercept has no direct interpretation.
+
+The coefficient for GvmBonds is the predicted difference in RealER corresponding
+to a 1 unit difference in GvmBonds, if other vraiables equal to zero. Thus, the estimated predictive difference per unit of GvmBonds is 0.09868 for each country. 
+
+The coefficient for HEAR2 is the predicted difference in RealER corresponding
+to a 1 unit difference in HEAR2, if other vraiables equal to zero. Thus, the estimated predictive difference per unit of HEAR2 is 2.02171 for each country. 
+
+The coefficient for GDPD is the predicted difference in RealER corresponding
+to a 1 unit difference in GDPD, if other vraiables equal to zero. Thus, the estimated predictive difference per unit of GDPD is 0.09900 for each country. 
+
+The coefficient for log(ExportNC) is the predicted difference in RealER corresponding
+to a 1 unit difference in log(ExportNC), if other vraiables equal to zero. Thus, the estimated predictive difference per unit of log(ExportNC) is 5.83821 decrease for each country. 
+
+The coefficient for log(ImportNC) is the predicted difference in RealER corresponding
+to a 1 unit difference log(ImportNC), if other vraiables equal to zero. Thus, the estimated predictive difference per unit of log(ImportNC)s is 5.77247 decrease for each country. 
+
+
+Input variable that is used in these models is country, which is defined on a ten-point ordered scale:  
+Country = Austria: observations from Austria  
+Country = Belgium: observations from Belgium  
+Country = Finland: observations from Finland  
+Country = France: observations from Franc  
+Country = Germany: observations from Germany  
+Country = Greece: observations from Greece  
+Country = Ireland: observations from Ireland  
+Country = Italy: observations from Italy  
+Country = Netherlands: observations from Netherlands  
+Country = Spain: observations from Spain  
+
+
+This parameterization of the model allows for different real exchange rate corresponding to each category of country. The “baseline” category (Country = Austria) corresponds to country Austria; the average real exchange rate for Austria is estimated by the intercept, $206.63215 + 0.09868 \times GvmBonds + 2.02171 \times HEAR2 + 0.09900 \times GDPD \text{-} 5.83821 \times log(ExportNC) \text{-} 5.77247 \times log(ImportNC)$. 
+
+The average real exchange rate in the other countries is found by adding the corresponding coefficient to this baseline average. This parameterization allows us to see that the real exchange rate in Germany achieve the highest average real exchange rate, $206.63215 + 0.09868 \times GvmBonds + 2.02171 \times HEAR2 + 0.09900 \times GDPD \text{-} 5.83821 \times log(ExportNC) \text{-} 5.77247 \times log(ImportNC) + 10.64748$. 
+
+\newpage
+
+
+# Appendix
+
+
+## Random Forest
+```{r}
+fit2 <- lm(RealER~HEAR5+GDPD+GvmBonds+HEAR4+GFCE+HCE2+as.factor(Country), data=mydata)
+summary(fit2)
+AIC(fit2)
+plot(fit2,which=1)
+car::qqPlot(fit2$residuals)
+```
+
+## Multilevel model varying across countreis
+```{r}
+library(lme4)
+mlfit1 <- lmer(RealER~GvmBonds+HEAR2+GDPD+log(ExportNC)+log(ImportNC)+(1|Country), data=mydata) 
+summary(mlfit1) 
+coef(mlfit1)
+plot(mlfit1,which=1)
+```
+
+
+## Multilevel model varying across countreis and years
+```{r}
+mlfit2 <- lmer(RealER~GvmBonds+HEAR2+GDPD+log(ExportUS)+(1|Country)+(1|Year), data=mydata)
+summary(mlfit2) 
+coef(mlfit2)
+plot(mlfit2,which=1)
+```
+
+
+\newpage
+
+
+# Discussion
+According to the analysis using Linear Regression, we can conclude that dirrderent countries'Real Exchange Rates could be predicted by Government Bonds, Harmonized Euro Area Rates(Outstanding Amounts, Deposits, Non-Financial Corporations, Agreed Maturity, Up to 2 Years), Gross Domestic Product(Deflator), Goods Value of Exports in US Dollars and Goods Value of Import in US Dollars. And in Multilevel models, we choose to set up groups in different countries and different year and build linear regressions. Results of coef() show estimated model within each group. After comparing AIC of each model, we choose the linear regression with minimum AIC.
+
