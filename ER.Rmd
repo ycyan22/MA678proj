@@ -98,13 +98,14 @@ names(mydata)[32] <- "ImportNC"
 ```
 
 
-\newpage
+&nbsp;
+&nbsp;
 
 
 ## Data cleaning
-I summarized numbers of missing values in each variable and decided to remove such NAs from dataset.
+I summarized numbers of missing values in each variable and decided to remove such NAs from dataset, since missing values do not occupy a large proportion.
 
-```{r, echo=FALSE, message=FALSE, warning=FALSE}
+```{r, include=FALSE}
 library(funModeling)
 library(tidyverse)
 data_integrity(mydata)
@@ -113,6 +114,7 @@ mydata <- drop_na(mydata)
 
 
 \newpage
+
 
 
 # EDA
@@ -162,7 +164,7 @@ acf(data1$HEAR2)
 &nbsp;
 &nbsp;
 
-Non-stationary variables would give models large R square and makes estimates unreliable. Original data is time series data, even though I mixed 10 countries' data and deleted observations containing missing values, I still need to check ACF before and avoid using non-stationary variables to fit regressions, here are 2 examples.  
+Non-stationary variables would give models large R square and makes estimates unreliable. Original data is time series data, so I need to check ACF before and avoid using non-stationary variables to fit regressions, here are 2 examples. Because 10 countries' data are mixed and original dataset contains missing values, I do not worry a lot about the effects.
 
 &nbsp;
 &nbsp;
@@ -245,8 +247,6 @@ The average real exchange rate in the other countries is found by adding the cor
 
 # Appendix
 
-## Methods
-
 ## Parallel Analysis
 Dataset has 32 variables and I want to find out the number of factors that will be selected for later analysis.
 
@@ -292,7 +292,7 @@ Try to fit models using top factors
 
 
 
-## Random Forest
+## Random Forest model
 ```{r, echo=FALSE}
 fit2 <- lm(RealER~HEAR5+GDPD+GvmBonds+HEAR4+GFCE+HCE2+as.factor(Country), data=mydata)
 summary(fit2)
