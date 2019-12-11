@@ -169,7 +169,7 @@ Non-stationary variables would give models large R square and makes estimates un
 
 ## Correlation
 
-```{r, echo=TRUE, message=FALSE, warning=FALSE}
+```{r, echo=FALSE, message=FALSE, warning=FALSE}
 sapply(mydata, is.numeric)
 cordata <- mydata[, sapply(mydata, is.numeric)]
 cor.ma <- cor(cordata, method = "pearson")
@@ -187,7 +187,7 @@ Some variables like ExportUS and ExportNC have high correlations beacuse they ar
 ## Parallel Analysis
 Dataset has 32 variables and I want to find out the number of factors that will be selected for later analysis.
 
-```{r, echo=TRUE, message=FALSE, warning=FALSE}
+```{r, echo=FALSE, message=FALSE, warning=FALSE}
 library(psych) 
 library(GPArotation)
 parallel <- fa.parallel(cordata, fm = 'minres', fa = 'fa') # parallel analysis
@@ -199,7 +199,7 @@ parallel <- fa.parallel(cordata, fm = 'minres', fa = 'fa') # parallel analysis
 The blue line shows eigenvalues of actual data and the two red lines (placed on top of each other) show simulated and resampled data. Here we look at the large drops in the actual data and spot the point where it levels off to the right. Also we locate the point of inflection – the point where the gap between simulated data and actual data tends to be minimum.
 
 
-```{r, echo=TRUE, message=FALSE, warning=FALSE}
+```{r, echo=FALSE, message=FALSE, warning=FALSE}
 sixfactor <- fa(cordata,nfactors = 6,rotate = "oblimin",fm="minres") # 6 factor analysis
 fa.diagram(sixfactor)
 ```
@@ -210,7 +210,7 @@ fa.diagram(sixfactor)
 
 ## Random Forest
 
-```{r, echo=TRUE, message=FALSE, warning=FALSE}
+```{r, echo=FALSE, message=FALSE, warning=FALSE}
 library(randomForest)
 model1 <- randomForest(RealER~., data=cordata, importance=T, ntree=500)
 model2 <- randomForest(RealER~., data=cordata, importance=T, ntree=1000)
@@ -232,17 +232,20 @@ Try to fit models using top factors
 mydata <- mydata %>% mutate(Year=stri_extract_last_regex(mydata$Time, "\\d{4}"))
 ```
 
-```{r, echo=TRUE, message=FALSE, warning=FALSE}
+```{r, echo=FALSE, message=FALSE, warning=FALSE}
 library(plotly)
 fit1 <- lm(RealER~GvmBonds+HEAR2+GDPD+log(ExportNC)+log(ImportNC)+as.factor(Country), data=mydata)
 summary(fit1)
-AIC(fit1)
 plot(fit1,which=1)
 car::qqPlot(fit1$residuals)
 ```
 
 
 According to the residual plot, our model complies with the assumptions of normality and constant variance, so there is no issue about violating the model assumptions. 
+
+
+\newpage
+
 
 ## Interpretation
 
@@ -288,16 +291,25 @@ The average real exchange rate in the other countries is found by adding the cor
 
 
 ## Random Forest
-```{r}
+```{r, echo=FALSE}
 fit2 <- lm(RealER~HEAR5+GDPD+GvmBonds+HEAR4+GFCE+HCE2+as.factor(Country), data=mydata)
 summary(fit2)
-AIC(fit2)
 plot(fit2,which=1)
 car::qqPlot(fit2$residuals)
 ```
 
+&nbsp;
+&nbsp;
+
+I try to fit a linear model using variables selected from random forest. Although results show most coefficients are significant, but R squared is not high. Residual plot and QQ plot also show this model is not good.
+
+
+\newpage
+
+
+
 ## Multilevel model varying across countreis
-```{r}
+```{r, echo=FALSE}
 library(lme4)
 mlfit1 <- lmer(RealER~GvmBonds+HEAR2+GDPD+log(ExportNC)+log(ImportNC)+(1|Country), data=mydata) 
 summary(mlfit1) 
@@ -305,14 +317,26 @@ coef(mlfit1)
 plot(mlfit1,which=1)
 ```
 
+&nbsp;
+&nbsp;
+
+I set different country groups and try to fit a multilevel model. From the summary of this regression, I found one important predictor GvmBonds is not siginificant even though residual plot looks good.
+
+
+\newpage
 
 ## Multilevel model varying across countreis and years
-```{r}
+```{r, echo=FALSE}
 mlfit2 <- lmer(RealER~GvmBonds+HEAR2+GDPD+log(ExportUS)+(1|Country)+(1|Year), data=mydata)
 summary(mlfit2) 
 coef(mlfit2)
 plot(mlfit2,which=1)
 ```
+
+&nbsp;
+&nbsp;
+
+This model varying across countreis and years and I got every variavles significant. However, its AIC is higher than the linear model I selected.
 
 
 \newpage
