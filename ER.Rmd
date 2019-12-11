@@ -182,50 +182,6 @@ Some variables like ExportUS and ExportNC have high correlations beacuse they ar
 \newpage
 
 
-# Methods
-
-## Parallel Analysis
-Dataset has 32 variables and I want to find out the number of factors that will be selected for later analysis.
-
-```{r, echo=FALSE, message=FALSE, warning=FALSE}
-library(psych) 
-library(GPArotation)
-parallel <- fa.parallel(cordata, fm = 'minres', fa = 'fa') # parallel analysis
-```
-
-&nbsp;
-&nbsp;
-
-The blue line shows eigenvalues of actual data and the two red lines (placed on top of each other) show simulated and resampled data. Here we look at the large drops in the actual data and spot the point where it levels off to the right. Also we locate the point of inflection – the point where the gap between simulated data and actual data tends to be minimum.
-
-
-```{r, echo=FALSE, message=FALSE, warning=FALSE}
-sixfactor <- fa(cordata,nfactors = 6,rotate = "oblimin",fm="minres") # 6 factor analysis
-fa.diagram(sixfactor)
-```
-
-
-\newpage
-
-
-## Random Forest
-
-```{r, echo=FALSE, message=FALSE, warning=FALSE}
-library(randomForest)
-model1 <- randomForest(RealER~., data=cordata, importance=T, ntree=500)
-model2 <- randomForest(RealER~., data=cordata, importance=T, ntree=1000)
-varImpPlot(model1)
-varImpPlot(model2)
-```
-
-&nbsp;
-&nbsp;
-
-Try to fit models using top factors
-
-
-\newpage
-
 
 # Models
 ```{r, echo=FALSE}
@@ -288,6 +244,52 @@ The average real exchange rate in the other countries is found by adding the cor
 
 
 # Appendix
+
+## Methods
+
+## Parallel Analysis
+Dataset has 32 variables and I want to find out the number of factors that will be selected for later analysis.
+
+```{r, echo=FALSE, message=FALSE, warning=FALSE}
+library(psych) 
+library(GPArotation)
+parallel <- fa.parallel(cordata, fm = 'minres', fa = 'fa') # parallel analysis
+```
+
+&nbsp;
+&nbsp;
+
+The blue line shows eigenvalues of actual data and the two red lines (placed on top of each other) show simulated and resampled data. Here we look at the large drops in the actual data and spot the point where it levels off to the right. Also we locate the point of inflection – the point where the gap between simulated data and actual data tends to be minimum.
+
+
+```{r, echo=FALSE, message=FALSE, warning=FALSE}
+sixfactor <- fa(cordata,nfactors = 6,rotate = "oblimin",fm="minres") # 6 factor analysis
+fa.diagram(sixfactor)
+```
+
+
+\newpage
+
+
+## Random Forest
+
+```{r, echo=FALSE, message=FALSE, warning=FALSE}
+library(randomForest)
+model1 <- randomForest(RealER~., data=cordata, importance=T, ntree=500)
+model2 <- randomForest(RealER~., data=cordata, importance=T, ntree=1000)
+varImpPlot(model1)
+varImpPlot(model2)
+```
+
+&nbsp;
+&nbsp;
+
+Try to fit models using top factors
+
+
+\newpage
+
+
 
 
 ## Random Forest
